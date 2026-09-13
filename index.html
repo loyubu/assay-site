@@ -236,8 +236,13 @@
 
   tr.sys { cursor: pointer; }
   tr.sys:hover td { background: var(--surface); }
+  /* Selected has to read differently from hovered, not just more of it. Both
+     used to paint the same --surface background with only a 2px edge between
+     them, so the row the chart was actually showing looked exactly like
+     whichever row the cursor happened to be over. */
   tr.sys.on td { background: var(--surface); }
-  tr.sys.on td:first-child { box-shadow: inset 2px 0 0 var(--brass); }
+  tr.sys.on td:first-child { box-shadow: inset 3px 0 0 var(--brass); }
+  tr.sys.on .sysname { color: var(--brass); }
 
   .sysname { font-family: var(--display); font-weight: 600; letter-spacing: -0.01em; }
 
