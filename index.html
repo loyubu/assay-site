@@ -205,6 +205,84 @@
     .flip-bar, .flip-val { transition: none; }
   }
 
+  /* ---------- plain-English explainers ---------- */
+
+  /* Native <details> on purpose. Keyboard and screen-reader behaviour come
+     free, find-in-page opens a closed one to show the match, and it needs no
+     script -- which matters on a page whose whole safety story is that it is
+     one static file. Brass is reserved for things you can click, and this is
+     one of the two on the page.
+
+     Placed last in each block rather than under the heading: opening a box
+     should never push the table you are trying to read off the screen. */
+  details.explain {
+    border-top: 1px solid var(--rule);
+    margin-top: 1.75rem;
+  }
+  details.explain > summary {
+    font-family: var(--display);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--brass);
+    cursor: pointer;
+    padding: 0.8rem 0 0.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    list-style: none;
+  }
+  details.explain > summary::-webkit-details-marker { display: none; }
+  details.explain > summary::before {
+    content: "";
+    flex: none;
+    width: 0; height: 0;
+    border-left: 5px solid currentColor;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    transition: transform 160ms ease;
+  }
+  details.explain[open] > summary::before { transform: rotate(90deg); }
+  details.explain > summary:focus-visible {
+    outline: 2px solid var(--brass);
+    outline-offset: 3px;
+  }
+  details.explain > summary:hover { color: var(--ink); }
+
+  /* Two columns, so an open box costs a few lines of height rather than half
+     a screen. `columns: 2 20rem` is the width-led form: it drops to one
+     column on its own when the page is too narrow to give each 20rem, which
+     is what a phone gets. Paragraphs are kept whole so a column break never
+     lands mid-thought. */
+  .explain-body {
+    color: var(--muted);
+    font-size: 0.9rem;
+    columns: 2 20rem;
+    column-gap: 3rem;
+    column-rule: 1px solid var(--rule);
+    padding-bottom: 0.5rem;
+  }
+  .explain-body p { margin: 0 0 0.7rem; break-inside: avoid; }
+  .explain-body p:last-child { margin-bottom: 0; }
+  .explain-body strong { color: var(--ink); font-weight: 600; }
+
+  /* The glossary rides the same two columns. Each term is wrapped so the
+     label never ends one column with its definition starting the next. */
+  .explain-body dl { margin: 0; }
+  .explain-body .term { break-inside: avoid; margin-bottom: 0.85rem; }
+  .explain-body dt {
+    font-family: var(--display);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 0.1rem;
+  }
+  .explain-body dd { margin: 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    details.explain > summary::before { transition: none; }
+  }
+
   /* ---------- tables ---------- */
 
   .scroll { overflow-x: auto; }
@@ -422,6 +500,34 @@
       Press the control to replay the identical rules over the two years before
       it &mdash; the data these variants were never selected against.
     </p>
+    <details class="explain">
+      <summary>What am I looking at?</summary>
+      <div class="explain-body">
+        <p>
+          Three versions of one trading plan, differing only in which hours they
+          may trade. Each bar is a version's average outcome in R: the typical win
+          or loss set against what that trade had at risk. A bar right of the
+          centre line finished ahead.
+        </p>
+        <p>
+          Under each label is the number of trades, and a rating of how far that
+          average sits from zero given how widely the individual trades varied.
+          The closer that rating is to zero, the more comfortably chance explains
+          it.
+        </p>
+        <p>
+          Both windows run identical rules over different stretches of history.
+          The versions were chosen by looking at the recent stretch, so it cannot
+          also be the evidence: search any period for the best of several variants
+          and one comes top whether the hours matter or not.
+        </p>
+        <p>
+          The earlier stretch is the honest test, because nothing was picked
+          against it. <strong>For this to count as evidence, the sign would have
+          to survive both windows.</strong> Press the control and see.
+        </p>
+      </div>
+    </details>
   </div>
 
   <!-- ============ SYSTEMS, DAILY ============ -->
@@ -429,7 +535,7 @@
     <p class="eyebrow">Rule systems, on their own timeframe</p>
     <h2>The fair test</h2>
     <p class="lede">
-      The four documented systems measured on <strong>daily bars</strong>, which
+      The nine documented systems measured on <strong>daily bars</strong>, which
       is what their specifications assume, over eighteen years. This is the
       version of the test each was actually written for.
     </p>
@@ -445,6 +551,31 @@
       </table>
     </div>
     <p class="chart-sub" id="dailySpan" style="margin-top:0.9rem"></p>
+    <details class="explain">
+      <summary>What am I looking at?</summary>
+      <div class="explain-body">
+        <p>
+          Each row is one published set of trading rules, run over about eighteen
+          years of daily prices. Daily is the speed most of them were written for,
+          so this is the fairest version of the test: every rule set is being
+          asked to do the job its author described.
+        </p>
+        <p>
+          Read the last two columns first, because they say how much of the row to
+          believe. One rates how far the average sits from zero against how widely
+          the individual trades varied. The bar beside it compares the trades on
+          hand with the number a result of that size would need before it settled
+          anything.
+        </p>
+        <p>
+          A high win rate and a losing average sit together quite comfortably, on
+          many small wins and a few large losses. And nine rows are nine chances
+          for one of them to look good by accident, so a lone promising figure
+          here is worth less than it appears. The column names are explained at
+          the foot of the page.
+        </p>
+      </div>
+    </details>
   </section>
 
   <!-- ============ PYRAMIDING ============ -->
@@ -473,12 +604,34 @@
       that is positive, and losses where it is not. Scaling into a move that
       does not persist simply buys more of a losing trade at a worse price.
     </div>
+    <details class="explain">
+      <summary>What am I looking at?</summary>
+      <div class="explain-body">
+        <p>
+          Turtle's rules do not put a trade on all at once. As a trade moves in
+          its favour they add to it, up to four helpings, with a single exit
+          covering the lot. Traders call that pyramiding, and each row here is the
+          same rules with a different limit on how many helpings are allowed.
+        </p>
+        <p>
+          Adding to a winner is where this style of trading is supposed to earn,
+          so leaving it out would have made "Turtle loses money" an unfair thing
+          to say. These rows are what makes it a fair thing to say.
+        </p>
+        <p>
+          One thing to watch while comparing them: the trade count changes from
+          row to row. More helpings change when a position closes, and therefore
+          when the next one can begin, so these are not the same trades exited
+          differently. They are related, but they are genuinely different sets.
+        </p>
+      </div>
+    </details>
   </section>
 
   <!-- ============ SYSTEMS ============ -->
   <section id="systems">
     <p class="eyebrow">Rule systems, like for like</p>
-    <h2>All five under identical conditions</h2>
+    <h2>All eleven under identical conditions</h2>
     <p class="lede">
       Same pairs, same dates, same costs. Results in R, where 1R is each
       trade's own opening stop distance. Drag the spread to see how much of
@@ -487,12 +640,12 @@
     </p>
     <div class="waiting" style="margin-bottom:1.5rem">
       <strong>Read these as a like-for-like comparison, not as a verdict on each
-      system.</strong> All five run here on M15 bars so the conditions are
-      identical &mdash; but Turtle, Dual MA and Channel Breakout are specified
-      for <em>daily</em> bars. Their proper measurement is
-      <a href="#daily">the table above</a>; these numbers describe the rules on
-      this timeframe, not the systems as their authors wrote them. Only the ICT
-      model is native to M15.
+      system.</strong> All eleven run here on M15 bars so the conditions are
+      identical &mdash; but every one of them except the ICT model and the
+      London breakout is specified for <em>daily</em> bars. Their proper
+      measurement is <a href="#daily">the table above</a>; these numbers
+      describe the rules on this timeframe, not the systems as their authors
+      wrote them.
     </div>
 
     <div class="controls">
@@ -516,6 +669,34 @@
     <p class="table-note" id="defaultNote"></p>
 
     <div class="chart-wrap" id="equityWrap"></div>
+    <details class="explain">
+      <summary>What am I looking at?</summary>
+      <div class="explain-body">
+        <p>
+          Same pairs, same dates, same charges, every row on fifteen-minute
+          prices. The comparison is the point rather than any single figure: on
+          one timeframe, under one set of conditions, which of these rule sets
+          fares better than which.
+        </p>
+        <p>
+          The slider sets the spread, the small gap between the price you can buy
+          at and the price you can sell at, which comes out of every trade whether
+          it works or not. Drag it and watch the columns move. A row that survives
+          only at the lowest setting is describing the cost of trading rather than
+          the rules.
+        </p>
+        <p>
+          Click any row to draw its running total underneath, because an average
+          hides shape. A steady bleed and one ruinous month can average out to the
+          same figure, and they are not the same experience.
+        </p>
+        <p>
+          Most of these rules were written for daily prices, and the note above
+          says which. This is a like-for-like comparison, not a verdict on each
+          one.
+        </p>
+      </div>
+    </details>
   </section>
 
   <!-- ============ LIVE ============ -->
@@ -528,6 +709,33 @@
       should be declined.
     </p>
     <div class="grid" id="liveGrid"></div>
+    <details class="explain">
+      <summary>What am I looking at?</summary>
+      <div class="explain-body">
+        <p>
+          This half of the page is about the machinery rather than the strategy.
+          It counts what the agent examined, how much of it it refused, how much
+          reached a phone, and what each examination costs to run.
+        </p>
+        <p>
+          Refusing is the expected outcome. The rules describe an uncommon
+          situation, so most of what gets examined should be turned down, and a
+          high decline rate is the design working rather than a fault. The
+          breakdown separates an ordinary refusal from one where a condition
+          marked required failed outright.
+        </p>
+        <p>
+          Answering times appear as a spread of delays and never as times of day.
+          A few weeks of the latter would publish when the owner is awake and
+          holding a phone, which is nobody else's business.
+        </p>
+        <p>
+          None of this says whether the strategy works. It says whether the thing
+          is doing what it was built to do, which is a separate question and an
+          easier one.
+        </p>
+      </div>
+    </details>
   </section>
 
   <!-- ============ CRITERIA ============ -->
@@ -552,6 +760,112 @@
         <tbody id="critBody"></tbody>
       </table>
     </div>
+    <details class="explain">
+      <summary>What am I looking at?</summary>
+      <div class="explain-body">
+        <p>
+          The trading plan's conditions, rewritten as questions that can be
+          answered one at a time. For every candidate the model scores each
+          condition and states what decided it. The score that gates the trade is
+          then worked out in code rather than announced by the model, so the
+          number cannot be talked up.
+        </p>
+        <p>
+          Some conditions are marked required. If one of those falls below the
+          floor the candidate is refused whatever the others say, and that is what
+          the veto column counts.
+        </p>
+        <p>
+          The spread of scores is the useful part. A condition scoring zero every
+          single time means the model and the rules disagree about what the
+          condition even is. One clustering in the middle means the model is
+          hedging on a question that is really yes or no. A tally of vetoes cannot
+          tell those two apart, and they need different repairs.
+        </p>
+        <p>
+          This table describes the judge, not the strategy.
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ GLOSSARY ============ -->
+  <section id="glossary">
+    <p class="eyebrow">Reference</p>
+    <h2>The words in the columns</h2>
+    <p class="lede">
+      Every term the tables above use, in one place, for anyone who would
+      rather not take them on trust.
+    </p>
+    <details class="explain">
+      <summary>Words on this page</summary>
+      <div class="explain-body">
+        <dl>
+          <div class="term">
+            <dt>R</dt>
+            <dd>One unit of risk. Every trade is planned with an exit that admits
+              it was wrong, and the distance to that exit is what the trade is
+              putting at risk. Calling that R lets a large trade and a small one
+              be averaged together honestly.</dd>
+          </div>
+          <div class="term">
+            <dt>Expectancy</dt>
+            <dd>The average outcome of a single trade, in R. The headline figure
+              on most of these tables.</dd>
+          </div>
+          <div class="term">
+            <dt>Total</dt>
+            <dd>Every trade added together, in R. Expectancy multiplied by the
+              number of trades.</dd>
+          </div>
+          <div class="term">
+            <dt>Win</dt>
+            <dd>The share of trades that finished ahead. It says nothing about
+              size, so a high one can sit on top of a loss.</dd>
+          </div>
+          <div class="term">
+            <dt>PF</dt>
+            <dd>Profit factor: everything won divided by everything lost. Above
+              one is ahead, below one is behind.</dd>
+          </div>
+          <div class="term">
+            <dt>t</dt>
+            <dd>How far the average sits from zero, measured against how widely
+              the individual trades varied. Near zero means chance explains it
+              comfortably. You want it well clear of two before a single figure
+              means anything, and further still when many figures are being read
+              at once.</dd>
+          </div>
+          <div class="term">
+            <dt>Sample adequacy</dt>
+            <dd>Trades on hand against the number a result of that size would need
+              before it could settle the question. A bar a fifth full means the
+              honest answer is still "not yet".</dd>
+          </div>
+          <div class="term">
+            <dt>Spread</dt>
+            <dd>The gap between the price you can buy at and the price you can
+              sell at. It comes out of every trade, win or lose.</dd>
+          </div>
+          <div class="term">
+            <dt>Kill zone</dt>
+            <dd>A narrow window of hours around the London or New York open, when
+              the market is busiest. Some of these rules only trade inside one.</dd>
+          </div>
+          <div class="term">
+            <dt>Daily, fifteen-minute</dt>
+            <dd>How much time each price bar covers. A rule written for one speed
+              is not the same rule at another.</dd>
+          </div>
+          <div class="term">
+            <dt>Derive and confirm</dt>
+            <dd>Splitting history in two: choose the rules on one stretch, then
+              test them on the other. Anything that works only on the stretch it
+              was chosen from has not been tested.</dd>
+          </div>
+        </dl>
+      </div>
+    </details>
   </section>
 
   <footer>
