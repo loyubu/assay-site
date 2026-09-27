@@ -1,3 +1,5 @@
+<!doctype html>
+<html lang="en-GB">
 <meta charset="utf-8">
 <title>Assay</title>
 <!-- Inline, because GitHub Pages serves this page alone: a favicon file would
@@ -6,6 +8,17 @@
      it reads on a dark tab bar as well as a light one. -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Crect width='36' height='36' rx='7' fill='%23eef0f2'/%3E%3Cpath d='M18 5.5 L28.5 30.5 M18 5.5 L7.5 30.5' stroke='%231b2230' stroke-width='3' stroke-linecap='round' fill='none'/%3E%3Cpath d='M3 21.5 Q7.5 17.8 12 21.5 T21.5 21.5 T31 21.5' stroke='%232849a8' stroke-width='2.6' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- A saved Day or Night choice is applied here, before anything is drawn.
+     Applied from the script at the foot of the page, it came too late: a
+     visitor whose choice differs from their device saw the wrong one first. -->
+<script>
+  (function () {
+    try {
+      var t = localStorage.getItem("assay-theme");
+      if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+    } catch (e) {}
+  })();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@75..150,500..900&family=JetBrains+Mono:wght@400;500&family=Public+Sans:ital,wght@0,400;0,600;1,400&display=swap">
@@ -21,20 +34,28 @@
      Teal rather than green for gain is what bought that margin -- the first
      draft's green managed 7.0 against the red and read as grey. Colour never
      carries direction alone here anyway: every figure is signed and every bar
-     sits on one side of a drawn zero. */
+     sits on one side of a drawn zero.
+
+     That validator checks marks against each other, not text against paper,
+     so text has its own floor: 4.5:1 (WCAG AA) on both paper and sheet, in
+     both modes. By day the faint ink and the teal missed it (3.2 and 3.4), so
+     faint ink is darker and gain figures use --pos-t, a deeper teal kept to
+     text. The fills are unchanged, and so is the check above. */
   :root {
     --g:      #eef0f2;   /* paper */
     --s:      #f8f9fa;   /* sheet: raised surfaces */
     --i:      #1b2230;   /* ink */
     --m:      #5b6573;   /* muted ink */
-    --f:      #7d8794;   /* faint ink: labels, axes */
+    --f:      #656d78;   /* faint ink: labels, axes */
     --r:      #c5cbd2;   /* rule */
     --r2:     #dde1e5;   /* soft rule */
     --a:      #2849a8;   /* stamp-blue: interactive affordances only */
     --pos:    #00928a;
     --neg:    #b4432f;
+    --pos-t:  #007973;   /* gain as text */
     --on-a:   #f8f9fa;   /* text on a stamp-blue fill */
-    --on-bar: #f8f9fa;   /* text inside a gain or loss bar */
+    --on-bar: #f8f9fa;   /* text inside a loss bar */
+    --on-pos: #101620;   /* text inside a gain bar: pale text on teal is 3.6 */
 
     --display: "Anybody", "Arial Narrow", system-ui, sans-serif;
     --body:    "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -43,16 +64,16 @@
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --g: #141922; --s: #1a2029; --i: #e3e7ee; --m: #98a2b0; --f: #7a8492;
+      --g: #141922; --s: #1a2029; --i: #e3e7ee; --m: #98a2b0; --f: #808b99;
       --r: #2d3542; --r2: #222a35; --a: #7187ea; --pos: #1fa9a6; --neg: #e8604a;
-      --on-a: #141922; --on-bar: #141922;
+      --pos-t: #1fa9a6; --on-a: #141922; --on-bar: #141922; --on-pos: #141922;
       color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
-    --g: #141922; --s: #1a2029; --i: #e3e7ee; --m: #98a2b0; --f: #7a8492;
+    --g: #141922; --s: #1a2029; --i: #e3e7ee; --m: #98a2b0; --f: #808b99;
     --r: #2d3542; --r2: #222a35; --a: #7187ea; --pos: #1fa9a6; --neg: #e8604a;
-    --on-a: #141922; --on-bar: #141922;
+    --pos-t: #1fa9a6; --on-a: #141922; --on-bar: #141922; --on-pos: #141922;
     color-scheme: dark;
   }
 
@@ -80,7 +101,7 @@
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.02em;
   }
-  .pos { color: var(--pos); }
+  .pos { color: var(--pos-t); }
   .neg { color: var(--neg); }
 
   :focus-visible { outline: 2px solid var(--a); outline-offset: 2px; }
@@ -210,6 +231,8 @@
     transition: left 700ms cubic-bezier(.4,0,.2,1);
   }
   .val.inside { color: var(--on-bar); }
+  .val.inside.pos { color: var(--on-pos); }
+  .win-dates { margin: -0.8rem 0 1.4rem; font-size: 0.8rem; color: var(--f); }
   .hero-note { margin: 1.4rem 0 0; color: var(--m); max-width: 72ch; }
   .hero-note strong { color: var(--i); font-weight: 600; }
   @media (max-width: 720px) { .frow { grid-template-columns: 1fr; } }
@@ -250,12 +273,14 @@
   .explain-body .term { break-inside: avoid; margin-bottom: 0.85rem; }
   .explain-body dt { font-weight: 600; color: var(--i); font-size: 0.88rem; margin-bottom: 0.1rem; }
   .explain-body dd { margin: 0; }
-  /* The glossary is the page's reference, so it opens by default. */
 
   /* ---------- tables ---------- */
 
   .scroll { overflow-x: auto; }
-  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+  /* line-height: normal is the density the owner approved. The page ran in
+     quirks mode then, where tables don't inherit line-height; with a doctype
+     they would take the body's 1.6 and every row would grow. */
+  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; line-height: normal; }
   table.wide { min-width: 62rem; }
   table.mid { min-width: 44rem; }
 
@@ -294,12 +319,23 @@
   th:first-child .defpop, th:nth-child(2) .defpop, th:nth-child(3) .defpop { right: auto; left: 0; }
   .defpop b { display: block; margin-bottom: 0.2rem; }
 
+  /* The whole row takes a click, but the name is a real button: that is what
+     keyboards and screen readers reach, and it says whether it is pressed.
+     aria-selected on a plain table row is not announced. */
   tr.sys { cursor: pointer; }
-  tr.sys:hover td { background: var(--s); }
-  tr.sys[aria-selected="true"] td { background: var(--s); }
-  tr.sys[aria-selected="true"] td:first-child { box-shadow: inset 3px 0 0 var(--a); padding-left: 0.65rem; }
-  tr.sys[aria-selected="true"] .sysname { color: var(--a); }
-  tr.sys:focus-visible { outline-offset: -2px; }
+  tr.sys:hover td, tr.sys:focus-within td { background: var(--s); }
+  tr.sys.on td { background: var(--s); }
+  tr.sys.on td:first-child { box-shadow: inset 3px 0 0 var(--a); padding-left: 0.65rem; }
+  tr.sys.on .sysname { color: var(--a); }
+  button.pick {
+    font: inherit; color: inherit; background: none; border: 0;
+    padding: 0; margin: 0; cursor: pointer; text-align: left;
+  }
+
+  /* Columns measured at the headline cost only. When the slider moves off
+     it they fade, so a row never reads as one set of figures when it is two.
+     The fade is on a wrapper, not the cell, so the row's highlight stays whole. */
+  .held { opacity: 0.4; }
 
   .sysname { font-family: var(--display); font-variation-settings: "wdth" 110; font-weight: 700; }
 
@@ -317,17 +353,18 @@
     font-weight: 800; font-size: 0.64rem; letter-spacing: 0.08em; text-transform: uppercase;
     padding: 0.2rem 0.45rem; border: 3px double currentColor; transform: rotate(-3deg);
   }
+  /* Never stamp-blue: that colour promises a click, and a verdict has none. */
   .vstamp.loses  { color: var(--neg); }
-  .vstamp.fee    { color: var(--a); }
+  .vstamp.fee    { color: var(--i); }
   .vstamp.none   { color: var(--m); }
-  .vstamp.clears { color: var(--pos); }
+  .vstamp.clears { color: var(--pos-t); }
 
   .badge {
     font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.02em;
     padding: 0.1rem 0.4rem; margin-left: 0.5rem; white-space: nowrap;
     border: 1px solid currentColor; vertical-align: 0.1em;
   }
-  .badge.req  { color: var(--a); }
+  .badge.req  { color: var(--i); }
   .badge.conf { color: var(--f); }
 
   .adq { display: flex; align-items: center; gap: 0.5rem; justify-content: flex-end; }
@@ -444,6 +481,7 @@
       <div class="theme" role="group" aria-label="Colour scheme">
         <button type="button" data-theme-set="light" aria-pressed="false">Day</button>
         <button type="button" data-theme-set="dark" aria-pressed="false">Night</button>
+        <button type="button" data-theme-set="auto" aria-pressed="false" title="Follow this device's setting">Auto</button>
       </div>
       <div class="stamp" id="stamp"></div>
     </div>
@@ -461,12 +499,17 @@
     </ol>
   </nav>
 
+  <main>
   <!-- ============ HERO: two windows ============ -->
+  <!-- The headline holds in both states. It used to follow the toggle, which
+       opened the page on "The last 12 months say this works": a claim the
+       page goes on to disprove, and the line a screenshot would carry. -->
   <div class="hero" id="hero">
-    <h2 id="heroTitle">The last 12 months say this works</h2>
+    <h2>One year says it works. The two before say it doesn&rsquo;t.</h2>
     <p class="lede">
-      Three versions of the same trading plan, which differ only in the hours
-      of the day they may trade. Each bar is the average result of one trade:
+      Three versions of the ICT model (<strong>Isaac</strong> in the tables
+      below), which differ only in the hours of the day they may trade. Each
+      bar is the average result of one trade:
       right of the centre line is a gain, left is a loss. Results are in
       <strong>R</strong>, where 1R is the amount a trade stood to lose, so
       &minus;0.1R means the average trade lost a tenth of what it risked. The
@@ -476,6 +519,7 @@
       <button type="button" data-win="confirm" aria-pressed="true">Last 12 months</button>
       <button type="button" data-win="derive" aria-pressed="false">The 2 years before</button>
     </div>
+    <p class="win-dates" id="winDates"></p>
     <div class="flip" id="flip"></div>
     <p class="hero-note" id="flipNote"></p>
     <details class="explain">
@@ -643,7 +687,7 @@
 
     <div class="controls">
       <label for="spread">Trading cost (spread)</label>
-      <input type="range" id="spread" min="0" max="6" step="1" value="3">
+      <input type="range" id="spread" min="0" max="6" step="1" value="3" aria-valuetext="0.8 pips">
       <span class="spread-val" id="spreadVal">0.8 pips</span>
       <div class="ticks" aria-hidden="true">
         <span>0</span><span>0.3</span><span>0.5</span><span>0.8</span><span>1.0</span><span>1.5</span><span>2.0</span>
@@ -799,7 +843,8 @@
       headings above show the same explanations when you point at them or tap
       them.
     </p>
-    <details class="explain">
+    <!-- The page's reference, so it opens by default, with or without script. -->
+    <details class="explain" open>
       <summary>Words on this page</summary>
       <div class="explain-body">
         <dl>
@@ -897,6 +942,7 @@
       </div>
     </details>
   </section>
+  </main>
 
   <footer>
     <span>Assay. Tested with pretend money on a practice account; no figure on this page is an amount of money.</span>
@@ -910,19 +956,41 @@
   "use strict";
   var D = JSON.parse(document.getElementById("data").textContent);
   var SPREADS = [0.0, 0.3, 0.5, 0.8, 1.0, 1.5, 2.0];
+  // The cost the headline figures are measured at. Winners, profit factor,
+  // enough-data and verdict exist only here; the build does not publish
+  // them per cost.
+  var HEADLINE = 0.8;
   var VERDICT = {
     loses: "Loses", fee: "Fee eats it", none: "No evidence", clears: "Clears the bar"
   };
   var MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
+  // Every string from the data is escaped before it goes into markup. The
+  // data is ours, but the build is a boundary, and this costs nothing.
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  // One locale for every number. Left to the browser, a German visitor saw
+  // "49.929" trades beside "-0.116" R: two meanings for one point.
+  var NF = {};
+  function grouped(v, n) {
+    return (NF[n] || (NF[n] = new Intl.NumberFormat("en-GB", {
+      minimumFractionDigits: n, maximumFractionDigits: n
+    }))).format(v);
+  }
+  var num = function (v) { return grouped(Number(v) || 0, 0); };
   var fmt = function (v, n) {
-    return (v === null || v === undefined) ? "--" : Number(v).toFixed(n === undefined ? 3 : n);
+    return (v === null || v === undefined) ? "--" : grouped(Number(v), n === undefined ? 3 : n);
   };
   var signed = function (v, n) {
     if (v === null || v === undefined) return "--";
-    var s = Math.abs(Number(v)).toFixed(n === undefined ? 3 : n);
+    var s = grouped(Math.abs(Number(v)), n === undefined ? 3 : n);
     return Number(v) > 0 ? "+" + s : (Number(v) < 0 ? "−" + s : s);
   };
+  // A count the build did not publish is unknown, not zero.
+  var count = function (v) { return v === null || v === undefined ? "--" : num(v); };
   var cls = function (v) { return v === null || v === undefined ? "" : (v >= 0 ? "pos" : "neg"); };
   // The human name, falling back to the id. Rows stay keyed on the id
   // everywhere it is used as a key; only text the reader sees gets the name.
@@ -934,22 +1002,13 @@
   function store(key, value) {
     try { if (value == null) localStorage.removeItem(key); else localStorage.setItem(key, value); } catch (e) {}
   }
-  function recall(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
-
   // ---------- theme ----------
   // Follows the visitor's device until they choose; the choice is remembered
-  // in this browser only, and the page renders correctly without it.
+  // in this browser only, and the page renders correctly without it. The
+  // script in the head has already applied a saved choice. Auto forgets it.
   var root = document.documentElement;
-  var chosen = recall("assay-theme");
-  if (chosen === "light" || chosen === "dark") root.setAttribute("data-theme", chosen);
-  function effectiveTheme() {
-    var t = root.getAttribute("data-theme");
-    if (t) return t;
-    try { return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; }
-    catch (e) { return "light"; }
-  }
   function paintThemeButtons() {
-    var t = effectiveTheme();
+    var t = root.getAttribute("data-theme") || "auto";
     Array.prototype.forEach.call(document.querySelectorAll("[data-theme-set]"), function (b) {
       b.setAttribute("aria-pressed", String(b.getAttribute("data-theme-set") === t));
     });
@@ -957,12 +1016,10 @@
   document.querySelector(".theme").addEventListener("click", function (e) {
     var b = e.target.closest("[data-theme-set]"); if (!b) return;
     var t = b.getAttribute("data-theme-set");
-    root.setAttribute("data-theme", t); store("assay-theme", t);
+    if (t === "auto") { root.removeAttribute("data-theme"); store("assay-theme", null); }
+    else { root.setAttribute("data-theme", t); store("assay-theme", t); }
     paintThemeButtons();
   });
-  try {
-    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", paintThemeButtons);
-  } catch (e) {}
   paintThemeButtons();
 
   // ---------- masthead ----------
@@ -972,10 +1029,15 @@
     var w = String(D.window || "").split(" to ");
     var gran = { M15: "15-minute", H1: "hourly", H4: "four-hour", D: "daily" }[D.granularity] || D.granularity;
     document.getElementById("stamp").innerHTML =
-      "<b>Three years of " + (gran || "") + " prices, " + (D.pairs || 0) + " currency pairs</b>" +
-      "<span>" + day(w[0]) + " to " + day(w[1]) + ", " + (D.bars || 0).toLocaleString() + " price bars</span>";
+      "<b>Three years of " + esc(gran || "") + " prices, " + num(D.pairs) + " currency pairs</b>" +
+      "<span>" + esc(day(w[0])) + " to " + esc(day(w[1])) + ", " + num(D.bars) + " price bars</span>";
     document.getElementById("docno").textContent = "Assay report, " + day(D.generated_at);
-    document.getElementById("footStamp").textContent = "Generated " + (D.generated_at || "");
+    // The build time, in the masthead's style rather than raw ISO.
+    var hm = /T(\d{2}):(\d{2})(?::[\d.]+)?(Z|[+-]\d{2}:\d{2})?$/.exec(D.generated_at || "");
+    document.getElementById("footStamp").textContent = "Generated " + (hm
+      ? day(D.generated_at) + ", " + hm[1] + ":" + hm[2] + " " +
+        (!hm[3] ? "" : (hm[3] === "Z" || hm[3] === "+00:00") ? "UTC" : "UTC" + hm[3])
+      : (D.generated_at || "")).trim();
   })();
 
   // ---------- glossary-backed column headings ----------
@@ -988,6 +1050,16 @@
     var dd = dt.nextElementSibling;
     if (dd) TERMS[dt.textContent.trim()] = dd.textContent.replace(/\s+/g, " ").trim();
   });
+  // The pop-up is for eyes. Screen readers get the same definition as the
+  // button's description, from a hidden copy that exists before focus lands.
+  var defIds = {}, defStore = document.createElement("div");
+  defStore.hidden = true;
+  Object.keys(TERMS).forEach(function (term, i) {
+    var span = document.createElement("span");
+    span.id = "def-" + i; span.textContent = TERMS[term];
+    defStore.appendChild(span); defIds[term] = span.id;
+  });
+  document.body.appendChild(defStore);
   var pinned = null;
   function closeDef() {
     var open = document.querySelector(".defpop");
@@ -1018,6 +1090,8 @@
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") { pinned = null; closeDef(); } });
   Array.prototype.forEach.call(document.querySelectorAll("button.def"), function (btn) {
     btn.setAttribute("aria-expanded", "false");
+    var id = defIds[btn.getAttribute("data-term")];
+    if (id) btn.setAttribute("aria-describedby", id);
     btn.addEventListener("mouseenter", function () { if (!pinned) showDef(btn); });
     btn.addEventListener("mouseleave", function () { if (!pinned) closeDef(); });
     btn.addEventListener("focus", function () { if (!pinned) showDef(btn); });
@@ -1027,6 +1101,15 @@
   // ---------- hero: two windows ----------
   var flip = D.signflip || [];
   var win = "confirm";   // the recent window opens first; the flip is the point
+  // The two stretches as dates: the last 12 months of the test window, and
+  // everything before them.
+  var winDates = (function () {
+    var w = String(D.window || "").split(" to ");
+    var m = /^(\d{4})(-\d{2}-\d{2})/.exec(w[1] || "");
+    if (!w[0] || !m) return {};
+    var split = (Number(m[1]) - 1) + m[2];
+    return { confirm: day(split) + " to " + day(w[1]), derive: day(w[0]) + " to " + day(split) };
+  })();
   var flipEl = document.getElementById("flip");
   var maxAbs = 0.02;
   flip.forEach(function (r) {
@@ -1038,7 +1121,7 @@
   maxAbs *= 1.2;
 
   flipEl.innerHTML = flip.map(function (r, i) {
-    return '<div class="frow"><div><div class="flabel">' + r.label + '</div>' +
+    return '<div class="frow"><div><div class="flabel">' + esc(r.label) + '</div>' +
       '<div class="fmeta num" id="fn' + i + '"></div></div>' +
       '<div class="track"><div class="ghost" id="fg' + i + '"></div>' +
       '<div class="bar" id="fb' + i + '"></div><div class="zero"></div>' +
@@ -1077,10 +1160,9 @@
         val.style.left = (inside ? 50 - half + 1.2 : 50 - half - 1.2) + "%";
         val.style.transform = inside ? "translateY(-50%)" : "translate(-100%, -50%)";
       }
-      n.textContent = (a.trades || 0) + " trades, chance test " + signed(a.t_stat, 2);
+      n.textContent = num(a.trades) + " trades, chance test " + signed(a.t_stat, 2);
     });
-    document.getElementById("heroTitle").textContent = win === "confirm"
-      ? "The last 12 months say this works" : "The two years before say it doesn’t";
+    document.getElementById("winDates").textContent = winDates[win] || "";
     document.getElementById("flipNote").innerHTML = win === "confirm"
       ? "<strong>Looking only at the last 12 months, one version seems to work.</strong> " +
         "But the versions were picked by looking at that same year. The dashed outlines " +
@@ -1152,6 +1234,17 @@
       var maxE = Math.max.apply(null, rows.map(function (s) {
         return Math.abs(atSpread(s, opts.spread()).expectancy_r || 0); }).concat([0.001]));
       var sel = opts.selected();
+      // Redrawing replaces every row, and with it whatever had focus. Note
+      // which row that was, so a keyboard user stays where they were.
+      var active = document.activeElement;
+      var keep = active && opts.body.contains(active) && active.closest("tr");
+      keep = keep ? keep.getAttribute("data-n") : null;
+      var dim = opts.dimHeld && opts.spread() !== HEADLINE;
+      function heldCell(klass, html) {
+        return '<td' + (klass ? ' class="' + klass + '"' : "") + (dim
+          ? ' title="Measured at ' + HEADLINE.toFixed(1) + ' pips; the slider does not move this column"' : "") +
+          '>' + (dim ? '<div class="held">' + html + '</div>' : html) + '</td>';
+      }
       opts.body.innerHTML = rows.map(function (s) {
         var b = atSpread(s, opts.spread());
         var a = s.adequacy || {};
@@ -1160,25 +1253,33 @@
         var be = breakEven(s);
         var beTxt = be == null ? '<span class="never">never</span>'
           : be === Infinity ? "above " + SPREADS[SPREADS.length - 1].toFixed(1) : be.toFixed(2) + " pips";
-        var v = s.verdict || "none";
+        var v = s.verdict || "none", on = s.name === sel;
+        var name = '<span class="sysname">' + esc(disp(s)) + '</span>';
         return (opts.onSelect
-            ? '<tr class="sys" tabindex="0" data-n="' + s.name + '" aria-selected="' + (s.name === sel) + '">'
-            : '<tr>') +
-          '<td><span class="sysname">' + disp(s) + '</span></td>' +
-          '<td class="num">' + (b.trades || 0).toLocaleString() + '</td>' +
-          '<td class="num">' + (s.win_rate == null ? "--" : (s.win_rate * 100).toFixed(1) + "%") + '</td>' +
+            ? '<tr class="sys' + (on ? " on" : "") + '" data-n="' + esc(s.name) + '"><td>' +
+              '<button type="button" class="pick" aria-pressed="' + on + '" aria-label="Show ' +
+              esc(disp(s)) + ' on the chart">' + name + '</button></td>'
+            : '<tr><td>' + name + '</td>') +
+          '<td class="num">' + num(b.trades) + '</td>' +
+          heldCell("num", s.win_rate == null ? "--" : (s.win_rate * 100).toFixed(1) + "%") +
           '<td><span class="ecell"><span class="num ' + cls(e) + '">' + signed(e) + '</span>' +
             '<span class="dbar" aria-hidden="true"><span class="t0"></span><span class="f ' + (e >= 0 ? "p" : "n") +
             '" style="left:' + (e >= 0 ? 50 : 50 - half) + '%;width:' + half + '%"></span></span></span></td>' +
           '<td class="num ' + cls(b.total_r) + '">' + signed(b.total_r, 1) + '</td>' +
-          '<td class="num">' + fmt(s.profit_factor, 2) + '</td>' +
+          heldCell("num", fmt(s.profit_factor, 2)) +
           '<td class="num">' + signed(b.t_stat, 2) + '</td>' +
           '<td class="num">' + beTxt + '</td>' +
-          '<td><div class="adq"><span class="adq-txt">' + (a.have != null ? a.have : "--") + " / " + (a.need || "—") + '</span>' +
-            '<div class="adq-track"><div class="adq-fill" style="width:' + pct + '%"></div></div></div></td>' +
-          '<td><span class="vstamp ' + v + '">' + (VERDICT[v] || v) + '</span></td>' +
+          heldCell("", '<div class="adq"><span class="adq-txt">' + count(a.have) + " / " + count(a.need) + '</span>' +
+            '<div class="adq-track"><div class="adq-fill" style="width:' + pct + '%"></div></div></div>') +
+          heldCell("", '<span class="vstamp ' + esc(v) + '">' + esc(VERDICT[v] || v) + '</span>') +
         '</tr>';
       }).join("");
+      if (keep) {
+        var again = Array.prototype.filter.call(opts.body.querySelectorAll("tr[data-n]"), function (tr) {
+          return tr.getAttribute("data-n") === keep;
+        })[0];
+        if (again && again.querySelector("button.pick")) again.querySelector("button.pick").focus();
+      }
       Array.prototype.forEach.call(table.querySelectorAll("th[data-k]"), function (th) {
         var k = th.getAttribute("data-k");
         if (k === sortKey) th.setAttribute("aria-sort", dir > 0 ? "ascending" : "descending");
@@ -1192,18 +1293,12 @@
       else { sortKey = k; dir = (k === "display") ? 1 : -1; }
       draw();
     });
-    // Rows are selectable by keyboard as well as by pointer.
-    function pick(e) {
-      var tr = e.target.closest("tr.sys"); if (!tr) return;
-      if (e.type === "keydown") {
-        if (e.key !== "Enter" && e.key !== " ") return;
-        e.preventDefault();
-      }
-      opts.onSelect(tr.getAttribute("data-n"));
-    }
+    // A click anywhere on the row picks it. The name button brings the
+    // keyboard for free: Enter and Space arrive here as clicks.
     if (opts.onSelect) {
-      opts.body.addEventListener("click", pick);
-      opts.body.addEventListener("keydown", pick);
+      opts.body.addEventListener("click", function (e) {
+        var tr = e.target.closest("tr.sys"); if (tr) opts.onSelect(tr.getAttribute("data-n"));
+      });
     }
     return { draw: draw };
   }
@@ -1254,18 +1349,22 @@
     var mine = curves.filter(function (c) { return c.s.name === selName; })[0];
     var col = mine.pts[mine.pts.length - 1] >= 0 ? "var(--pos)" : "var(--neg)";
     var end = mine.pts[mine.pts.length - 1];
+    // Said as it is drawn: a running total, not a running average. The old
+    // caption ("average result per trade as the trades go by") described a
+    // different line from the one on screen.
     host.innerHTML =
-      '<div class="chart-head"><p class="chart-title">' + disp(sel) + ', ' + signed(sel.expectancy_r) +
-        'R per trade over ' + (sel.trades || 0).toLocaleString() + ' trades</p>' +
-        '<p class="chart-sub">Average result per trade as the trades go by, at a cost of ' + spreadLabel +
-        '. Each line ends at that rule set\u2019s average.</p></div>' +
-      '<div class="chart"><svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Running result per trade for every rule set, with ' +
-        disp(sel) + ' highlighted, ending at ' + signed(end) + 'R per trade">' + g +
+      '<div class="chart-head"><p class="chart-title">' + esc(disp(sel)) + ', ' + signed(sel.expectancy_r) +
+        'R per trade over ' + num(sel.trades) + ' trades</p>' +
+        '<p class="chart-sub">Each line is a rule set\u2019s running total, divided by its full number of ' +
+        'trades so all of them share one scale. So each line ends at that rule set\u2019s average per trade. ' +
+        'Cost ' + esc(spreadLabel) + '.</p></div>' +
+      '<div class="chart"><svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Running total for every rule set, ' +
+        'scaled by its trade count, with ' + esc(disp(sel)) + ' highlighted, ending at ' + signed(end) + 'R per trade">' + g +
         curves.filter(function (c) { return c !== mine; }).map(function (c) {
           var d = path(c.pts);
           return '<path d="' + d + '" fill="none" stroke="var(--f)" stroke-width="1.1" opacity="0.45"/>' +
-            '<path class="hit" data-n="' + c.s.name + '" d="' + d + '" fill="none" stroke="transparent" stroke-width="10">' +
-            '<title>' + disp(c.s) + '</title></path>';
+            '<path class="hit" data-n="' + esc(c.s.name) + '" d="' + d + '" fill="none" stroke="transparent" stroke-width="10">' +
+            '<title>' + esc(disp(c.s)) + '</title></path>';
         }).join("") +
         '<path d="' + path(mine.pts) + '" fill="none" stroke="' + col + '" stroke-width="2.2" stroke-linejoin="round"/>' +
         '<circle cx="' + x(1).toFixed(1) + '" cy="' + y(end).toFixed(1) + '" r="4.5" fill="' + col + '" stroke="var(--g)" stroke-width="2"/>' +
@@ -1316,7 +1415,7 @@
   })();
   var sysTable = null;
   function drawEquity() {
-    drawChart(document.getElementById("equityWrap"), systems, selected, selectSystem, "0.8 pips");
+    drawChart(document.getElementById("equityWrap"), systems, selected, selectSystem, HEADLINE.toFixed(1) + " pips");
   }
   function selectSystem(name) {
     selected = name; sysTable.draw(); drawEquity(); hashFor("sys-", name);
@@ -1325,23 +1424,27 @@
     sysTable = makeTable({
       key: "systems", rows: systems, body: document.getElementById("sysBody"),
       spread: function () { return SPREADS[spreadIdx]; },
-      selected: function () { return selected; }, onSelect: selectSystem
+      selected: function () { return selected; }, onSelect: selectSystem, dimHeld: true
     });
     sysTable.draw(); drawEquity();
     document.getElementById("sysNote").textContent =
-      "Listed A to Z; click a heading to sort. Verdicts are judged at a cost of 0.8 pips, whatever " +
-      "the slider shows, and need a chance test beyond " +
+      "Listed A to Z; click a heading to sort. Winners, profit factor, enough data and the verdict are " +
+      "measured at a cost of " + HEADLINE.toFixed(1) + " pips whatever the slider shows, and fade when " +
+      "it moves. Verdicts need a chance test beyond " +
       (bars.systems != null ? bars.systems.toFixed(2) : "--") + " either way: stricter than usual, " +
       "because " + systems.length + " rule sets are being compared at once.";
     document.getElementById("spread").addEventListener("input", function () {
       spreadIdx = Number(this.value);
-      document.getElementById("spreadVal").textContent = SPREADS[spreadIdx].toFixed(1) + " pips";
+      var label = SPREADS[spreadIdx].toFixed(1) + " pips";
+      document.getElementById("spreadVal").textContent = label;
+      this.setAttribute("aria-valuetext", label);   // read out as "0.8 pips", not "3"
       sysTable.draw();
     });
   } else {
+    // Visitors see this, so it speaks to them, not to whoever runs the build.
     document.getElementById("systems").innerHTML =
-      "<h2>No backtest data in this build</h2><p class='notice'>Run <strong>python -m " +
-      "tools.build_stats</strong> without <strong>--quick</strong> to include the comparison.</p>";
+      "<h2>Side by side</h2><p class='notice'>This edition of the report doesn&rsquo;t include " +
+      "the side-by-side comparison.</p>";
   }
 
   // ---------- the fair test (daily) ----------
@@ -1354,8 +1457,9 @@
     }).draw();
     document.getElementById("dailySpan").textContent =
       "Daily prices from " + String(D.daily_window || "").split(" to ").map(day).join(" to ") + ", " +
-      (D.daily_bars || 0).toLocaleString() + " prices in all. Results include a trading cost of 1.0 pip. " +
-      "Verdicts need a chance test beyond " +
+      num(D.daily_bars) + " prices in all. Average, total and chance test include a trading cost of " +
+      "1.0 pip; winners, profit factor, enough data and the verdict were measured at " +
+      HEADLINE.toFixed(1) + " pips. Verdicts need a chance test beyond " +
       (bars.systems_daily != null ? bars.systems_daily.toFixed(2) : "--") + " either way.";
   } else {
     document.getElementById("daily").hidden = true;
@@ -1378,7 +1482,7 @@
                 : r.unit_count === 4 ? "4 <span class='badge req'>as written</span>"
                 : String(r.unit_count);
       return '<tr><td>' + label + '</td>' +
-        '<td class="num">' + (r.trades || 0).toLocaleString() + '</td>' +
+        '<td class="num">' + num(r.trades) + '</td>' +
         '<td class="num">' + (r.win_rate == null ? "--" : (r.win_rate * 100).toFixed(1) + "%") + '</td>' +
         '<td class="num ' + cls(r.expectancy_r) + '">' + signed(r.expectancy_r) + '</td>' +
         '<td class="num ' + cls(r.total_r) + '">' + signed(r.total_r, 1) + '</td>' +
@@ -1412,7 +1516,7 @@
   function barBlock(rows) {
     var max = Math.max.apply(null, rows.map(function (r) { return r.count || 0; }).concat([1]));
     return '<div class="bars">' + rows.map(function (r) {
-      return '<div class="bar-row"><span class="bl">' + (r.bucket || r.label) + '</span>' +
+      return '<div class="bar-row"><span class="bl">' + esc(r.bucket || r.label) + '</span>' +
         '<div class="bar-track"><div class="bar-fill" style="width:' + ((r.count || 0) / max * 100) + '%"></div></div>' +
         '<span class="bn">' + (r.count || 0) + '</span></div>';
     }).join("") + '</div>';
@@ -1420,21 +1524,25 @@
   var kv = function (k, v) { return '<div class="kv"><span class="k">' + k + '</span><span class="v">' + v + '</span></div>'; };
   var declineTxt = f.decline_rate == null ? "--" : (f.decline_rate * 100).toFixed(0) + "%";
 
+  // Every count goes through count(): a field the build left out shows as
+  // unknown. With "|| 0", two missing fields read as "the AI was asked 0
+  // times" beside real spend.
   document.getElementById("liveGrid").innerHTML =
     '<div><div class="figure-label">Trade ideas examined</div>' +
-      '<div class="figure"><span class="big">' + (f.decisions || 0) + '</span></div>' +
-      kv("Turned down", f.declined || 0) + kv("Blocked by a must-pass check", f.vetoed || 0) +
-      kv("Scored too low to send", f.below_floor || 0) + kv("Sent as an alert", f.alerted || 0) + '</div>' +
+      '<div class="figure"><span class="big">' + count(f.decisions) + '</span></div>' +
+      kv("Turned down", count(f.declined)) + kv("Blocked by a must-pass check", count(f.vetoed)) +
+      kv("Scored too low to send", count(f.below_floor)) + kv("Sent as an alert", count(f.alerted)) + '</div>' +
     '<div><div class="figure-label">Share turned down</div>' +
       '<div class="figure"><span class="big">' + declineTxt + '</span></div>' +
       '<p class="panel-note">High is correct here: most ideas should fail the checklist.</p>' +
-      kv("Alerts accepted", f.approved || 0) + kv("Alerts declined", f.skipped || 0) + kv("Alerts left unanswered", f.expired || 0) + '</div>' +
+      kv("Alerts accepted", count(f.approved)) + kv("Alerts declined", count(f.skipped)) +
+      kv("Alerts left unanswered", count(f.expired)) + '</div>' +
     '<div><div class="figure-label">Running cost</div>' +
       '<div class="fig-row"><div class="figure"><span class="big">' + fmt(cost.usd_per_candidate, 3) +
         '</span><span class="unit">US dollars per idea examined</span></div>' +
         spark((D.history || {}).spend_per_run, "var(--a)") + '</div>' +
-      kv("Times the AI was asked", cost.runs_with_a_model_call || 0) +
-      kv("Ideas examined by the AI", cost.candidates_analysed || 0) +
+      kv("Times the AI was asked", count(cost.runs_with_a_model_call)) +
+      kv("Ideas examined by the AI", count(cost.candidates_analysed)) +
       kv("Total so far", "$" + fmt(cost.total_spend_usd, 2)) + '</div>' +
     '<div><div class="figure-label">Time taken to answer alerts</div>' +
       (latTotal ? barBlock(lat)
@@ -1451,27 +1559,27 @@
     document.getElementById("critBody").innerHTML = crit.map(function (c) {
       var s = c.scores || {};
       var tot = (s.zero || 0) + (s.low || 0) + (s.mid || 0) + (s.high || 0) || 1;
+      // role="img" hides the segments from screen readers, so the counts go
+      // into the one label they do read.
+      var said = [];
       var seg = function (n, klass, label) {
         if (!n) return "";
         var text = label + ": " + n + " of " + tot;
-        return '<span class="' + klass + '" style="width:' + (n / tot * 100) + '%" title="' + text +
-          '" aria-label="' + text + '"></span>';
+        said.push(text);
+        return '<span class="' + klass + '" style="width:' + (n / tot * 100) + '%" title="' + text + '"></span>';
       };
-      return '<tr><td><span class="sysname">' + (c.display || c.criterion) + '</span>' +
+      var segs = seg(s.zero, "s-zero", "Scored 0") + seg(s.low, "s-low", "Scored 1 to 49") +
+        seg(s.mid, "s-mid", "Scored 50 to 79") + seg(s.high, "s-high", "Scored 80 or more");
+      return '<tr><td><span class="sysname">' + esc(c.display || c.criterion) + '</span>' +
           (c.required ? '<span class="badge req">must pass</span>' : '<span class="badge conf">adds to score</span>') + '</td>' +
-        '<td class="num">' + c.n + '</td>' +
+        '<td class="num">' + count(c.n) + '</td>' +
         '<td class="num">' + fmt(c.mean_score, 0) + '</td>' +
-        '<td class="num ' + (c.veto_count ? "neg" : "") + '">' + c.veto_count + '</td>' +
-        '<td><div class="dist" role="img" aria-label="Score distribution">' +
-          seg(s.zero, "s-zero", "Scored 0") + seg(s.low, "s-low", "Scored 1 to 49") +
-          seg(s.mid, "s-mid", "Scored 50 to 79") + seg(s.high, "s-high", "Scored 80 or more") +
+        '<td class="num ' + (c.veto_count ? "neg" : "") + '">' + count(c.veto_count) + '</td>' +
+        '<td><div class="dist" role="img" aria-label="' +
+          esc(said.length ? "How it scored. " + said.join("; ") : "Not scored yet") + '">' + segs +
         '</div></td></tr>';
     }).join("");
   }
-
-  // ---------- the glossary opens by default: it is the page's reference ----------
-  var gloss = document.querySelector("#glossary details.explain");
-  if (gloss) gloss.open = true;
 
   // ---------- section index ----------
   // Hidden sections drop out of the index too, and the current section is
