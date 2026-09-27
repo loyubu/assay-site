@@ -587,7 +587,7 @@
     <p class="table-note" id="dailySpan"></p>
     <!-- No curve here yet, deliberately. The daily rows only carry their
          equity curve at 0.8 pips while this table is quoted at 1.0, and
-         double_bollinger's 0.8-pip curve holds a single trade of about -3,100R
+         Boaz's 0.8-pip curve holds a single trade of about -3,100R
          -- its by-spread figures are not even monotonic (-0.33R at 0.8, -0.10R
          at 1.0). Drawing that would present a probable tiny-stop artefact as a
          finding. Restore once build_stats emits the daily curve at 1.0 and
@@ -1419,8 +1419,13 @@
   function drawEquity() {
     drawChart(document.getElementById("equityWrap"), systems, selected, selectSystem, HEADLINE.toFixed(1) + " pips");
   }
+  // The address bar carries the nickname, never the build's id: the page
+  // names rule sets by nickname only, and a shared link shows its URL.
+  function slug(s) { return String(disp(s)).toLowerCase().replace(/[^a-z0-9]+/g, "-"); }
   function selectSystem(name) {
-    selected = name; sysTable.draw(); drawEquity(); hashFor("sys-", name);
+    selected = name; sysTable.draw(); drawEquity();
+    var s = systems.filter(function (x) { return x.name === name; })[0];
+    if (s) hashFor("sys-", slug(s));
   }
   if (systems.length) {
     sysTable = makeTable({
@@ -1606,11 +1611,16 @@
     });
   }
 
-  // ---------- deep links: #sys-turtle ----------
+  // ---------- deep links: #sys-tom ----------
+  // Links made before nicknames reached the address bar used the build's
+  // id; they still open, and the address is rewritten to the nickname.
   (function () {
-    var h = (location.hash || "").slice(1), m;
-    if ((m = /^sys-(.+)$/.exec(h)) && systems.some(function (s) { return s.name === m[1]; })) {
-      selectSystem(m[1]);
+    var h = decodeURIComponent((location.hash || "").slice(1)).toLowerCase(), m, hit;
+    if ((m = /^sys-(.+)$/.exec(h))) {
+      hit = systems.filter(function (s) { return slug(s) === m[1] || s.name === m[1]; })[0];
+    }
+    if (hit) {
+      selectSystem(hit.name);
       document.getElementById("equityWrap").scrollIntoView();
     }
   })();

@@ -35,7 +35,9 @@ which is why the rule is absolute rather than a judgement made at render time.
 
 ## Honest summary of what it found
 
-Three independent rule sets have been measured on this harness — the Turtle and
-Kaufman systems, a set of macro and regime factors, and the ICT methodology.
-None showed an edge. That is a real result, obtained for nothing, and it is the
-kind of result a research project should want early.
+Every rule set measured on this harness so far — those on the dashboard, and a
+set of macro and regime factors — has failed to show an edge. That is a real
+result, obtained for nothing, and it is the kind of result a research project
+should want early.
+
+Rule sets are named by nickname only, here and on the dashboard.
