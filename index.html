@@ -449,6 +449,19 @@
   .bar-fill { position: absolute; inset: 0 auto 0 0; background: var(--m); }
   .bar-row .bn { font-family: var(--mono); font-size: 0.75rem; color: var(--f); text-align: right; }
 
+  /* ---------- findings ---------- */
+
+  /* Four results on the report's own rule, each under a line of ink. */
+  .findings > div { border-top: 1px solid var(--i); padding-top: 0.8rem; }
+  .findings .figure-label { margin-bottom: 0.25rem; }
+  .fnum {
+    font-family: var(--mono); font-weight: 500; font-size: 1.7rem;
+    letter-spacing: -0.03em; line-height: 1.15; margin: 0 0 0.45rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .fnum small { font-size: 0.5em; letter-spacing: 0; color: var(--f); }
+  .findings p { margin: 0; color: var(--m); font-size: 0.9rem; }
+
   /* ---------- criteria ---------- */
 
   .legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; margin: 0 0 0.9rem; font-size: 0.8rem; color: var(--m); }
@@ -503,6 +516,7 @@
 
   <nav class="index" aria-label="Sections">
     <ol>
+      <li><a href="#findings">Findings</a></li>
       <li><a href="#hero">Opening test</a></li>
       <li><a href="#daily">Fair test</a></li>
       <li><a href="#pyramid">Adding to winners</a></li>
@@ -523,6 +537,15 @@
       it, but the tables, bars and chart stay empty until it&rsquo;s on.
     </p>
   </noscript>
+
+  <!-- ============ FINDINGS ============ -->
+  <!-- The answer before the evidence. Every figure is counted from the data
+       the sections below draw, so it can't drift from them when the build
+       refreshes. Hidden until the script fills it. -->
+  <section id="findings" hidden>
+    <h2>Findings</h2>
+    <div class="grid findings" id="findingsGrid"></div>
+  </section>
 
   <!-- ============ HERO: two windows ============ -->
   <!-- The headline holds in both states. It used to follow the toggle, which
@@ -1624,6 +1647,66 @@
         '</div></td></tr>';
     }).join("");
   }
+
+  // ---------- findings ----------
+  // Four results, each counted from the same data the sections below draw,
+  // and each tile dropped when its data is missing.
+  (function () {
+    var tiles = [];
+    function tile(label, figure, text) {
+      tiles.push('<div><div class="figure-label">' + label + '</div><div class="fnum">' + figure +
+        '</div><p>' + text + '</p></div>');
+    }
+    function list(parts) {
+      return parts.length < 2 ? parts.join("") : parts.slice(0, -1).join(", ") + " and " + parts[parts.length - 1];
+    }
+    // How the rule sets that didn't clear the bar fell short, in the
+    // verdicts' own words: "Loses", "Fee eats it", "No evidence".
+    function mix(rows) {
+      var n = { loses: 0, fee: 0, none: 0 };
+      rows.forEach(function (s) { var v = s.verdict || "none"; if (v in n) n[v]++; });
+      var parts = [];
+      if (n.loses) parts.push(n.loses + (n.loses === 1 ? " loses" : " lose") + " outright");
+      if (n.fee) parts.push(n.fee + (n.fee === 1 ? " loses" : " lose") + " to the trading cost");
+      if (n.none) parts.push(n.none + (n.none === 1 ? " is" : " are") + " too close to call");
+      if (parts.length === 1 && rows.length > 1 && (n.loses || n.fee || n.none) === rows.length) parts[0] = "All " + parts[0];
+      return parts.length ? list(parts) + "." : "";
+    }
+    function clears(rows, where) {
+      var c = rows.filter(function (s) { return s.verdict === "clears"; }).length;
+      return [c + ' <small>of ' + rows.length + '</small>',
+        "rule sets " + (c === 1 ? "clears" : "clear") + " the bar " + where + ". " + mix(rows)];
+    }
+
+    var best = flip.filter(function (r) { return r.confirm && r.confirm.expectancy_r != null && r.derive && r.derive.expectancy_r != null; })
+      .sort(function (a, b) { return b.confirm.expectancy_r - a.confirm.expectancy_r; })[0];
+    if (best) {
+      var c = best.confirm.expectancy_r, d = best.derive.expectancy_r;
+      tile("Opening test",
+        '<span class="' + cls(c) + '">' + signed(c) + '</span> <small>then</small> <span class="' + cls(d) + '">' + signed(d) + '</span>',
+        esc(best.label) + " was the best of " + flip.length + " versions over the last 12 months. " +
+        (d < 0 ? "Over the two years before, the same rules lost." : "Over the two years before, the same rules made money too.") +
+        " Figures are R per trade.");
+    }
+    if (systems.length) {
+      var s = clears(systems, "on " + ({ M15: "15-minute", H1: "hourly", H4: "four-hour", D: "daily" }[D.granularity] || "intraday") + " prices");
+      tile("Side by side", s[0], s[1]);
+    }
+    if (daily.length) {
+      var dl = clears(daily, "on daily prices, the test most were written for");
+      tile("Fair test", dl[0], dl[1]);
+    }
+    if (f.decisions != null && f.alerted != null) {
+      tile("The agent", f.alerted + ' <small>of ' + num(f.decisions) + '</small>',
+        "trade ideas became alerts. " +
+        (f.declined === f.decisions ? "It turned down all " + num(f.decisions) + "." : "It turned down " + count(f.declined) + ".") +
+        (cost.total_spend_usd != null ? " The AI has cost $" + fmt(cost.total_spend_usd, 2) + " so far." : ""));
+    }
+    if (tiles.length) {
+      document.getElementById("findingsGrid").innerHTML = tiles.join("");
+      document.getElementById("findings").hidden = false;
+    }
+  })();
 
   // ---------- section index ----------
   // Hidden sections drop out of the index too, and the current section is
