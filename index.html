@@ -1122,8 +1122,9 @@
   // ---------- glossary-backed column headings ----------
   // The definitions are read from the glossary already on the page, so these
   // show nothing that has not passed the public-copy gate, and there is one
-  // place to edit a definition. tests/test_site.py fails if a heading names a
-  // term the glossary lacks.
+  // place to edit a definition. tests/test_site.py in the private repo, and
+  // .github/check_site.py here, fail if a heading names a term the glossary
+  // lacks.
   var TERMS = {};
   Array.prototype.forEach.call(document.querySelectorAll("#glossary dt"), function (dt) {
     var dd = dt.nextElementSibling;
