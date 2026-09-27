@@ -12,6 +12,12 @@ uses in `fonts/`, with their licences. The fonts are served from here rather
 than from Google, so opening the page sends a visitor's browser to no one
 else.
 
+Every change runs `.github/check_site.py`: the data parses and has what the
+page draws, nothing from the never-published list below is present, no
+internal id appears outside the data, and the page's script parses. It runs
+after a push lands, so it flags a problem rather than preventing one; the
+allowlist in the build is still the real guard.
+
 The agent itself lives in a separate, private repository. That separation is
 deliberate and structural rather than a matter of care: the trading journal,
 account identifiers and anything denominated in currency are not filtered out
