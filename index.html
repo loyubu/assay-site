@@ -576,18 +576,6 @@
       <summary>What am I looking at?</summary>
       <div class="explain-body">
         <p>
-          Three versions of one trading plan. They are identical except for the
-          hours of the day they are allowed to trade in. Each bar shows how the
-          average trade did: to the right of the centre line it made money, to
-          the left it lost.
-        </p>
-        <p>
-          Results are measured in R. One R is the amount a trade stood to lose if
-          it went wrong, so a result of minus a tenth of an R means the average
-          trade lost a tenth of what it risked. Measuring this way lets big and
-          small trades be compared fairly.
-        </p>
-        <p>
           Under each name is the number of trades and a chance test, which asks
           whether the result could easily be luck. The closer it is to zero, the
           more likely luck explains it.
@@ -643,12 +631,6 @@
       <summary>What am I looking at?</summary>
       <div class="explain-body">
         <p>
-          Each row is a well-known set of trading rules, tested on one price per
-          day over about eighteen years. Most of these rules were written for
-          daily prices, so this is the fairest test: each one is doing the job its
-          author described.
-        </p>
-        <p>
           Look at the chance test and the enough-data columns first. They tell you
           how far to trust the rest of the row. A chance test near zero means luck
           could explain the result. A short enough-data bar means there are not
@@ -699,15 +681,8 @@
       <summary>What am I looking at?</summary>
       <div class="explain-body">
         <p>
-          Tom&rsquo;s rules do not buy everything at once. As a trade moves the
-          right way they add to it, up to four times, and a single exit closes the
-          whole lot. Traders call this pyramiding. Each row is the same rules with
-          a different limit on how many additions are allowed.
-        </p>
-        <p>
-          Adding to winning trades is where this style of trading is meant to make
-          its money. Leaving it out would have made it unfair to say Tom&rsquo;s
-          rules lose. These rows are what make it a fair test.
+          Each row is the same rules with a different limit on how many additions
+          are allowed.
         </p>
         <p>
           The number of trades changes from row to row. Adding more changes when a
@@ -768,27 +743,14 @@
       <summary>What am I looking at?</summary>
       <div class="explain-body">
         <p>
-          Every row uses the same currency pairs, the same dates and the same
-          trading costs, on prices taken every fifteen minutes. The comparison is
-          the point: under identical conditions, which rule sets do better than
-          which.
-        </p>
-        <p>
           The slider sets the trading cost, called the spread. It is the small gap
           between the price you can buy at and the price you can sell at, and
-          every trade pays it, win or lose. Drag the slider and watch the results
-          change. A rule set that only looks good when trading costs almost
-          nothing is measuring the cost, not the rules.
+          every trade pays it, win or lose.
         </p>
         <p>
           Click a row to see how its results built up over time. An average hides
           the shape: a slow, steady loss and one terrible month can give the same
           average, and they feel very different to live through.
-        </p>
-        <p>
-          Most of these rules were written for daily prices, as the note above
-          says. Treat this as a like-for-like comparison, not the final word on
-          any one of them.
         </p>
       </div>
     </details>
@@ -808,25 +770,13 @@
       <summary>What am I looking at?</summary>
       <div class="explain-body">
         <p>
-          This part of the page is about the software, not the strategy. It counts
-          the trade ideas the agent examined, how many it turned down, how many it
-          passed on as alerts, and what each examination costs to run.
-        </p>
-        <p>
-          Turning ideas down is the normal result. The plan describes a rare
-          situation, so most of what the agent examines should fail, and a high
-          refusal rate means it is working as designed. The breakdown separates an
-          ordinary refusal from one where a must-pass check failed.
+          The breakdown separates an ordinary refusal from one where a must-pass
+          check failed.
         </p>
         <p>
           How long alerts take to answer is shown as a range of delays, never as
           times of day. Times of day would show when the owner is awake, which is
           nobody else&rsquo;s business.
-        </p>
-        <p>
-          None of this says whether the strategy works. It says whether the
-          software does what it was built to do, which is a separate and easier
-          question.
         </p>
       </div>
     </details>
@@ -860,10 +810,8 @@
       <summary>What am I looking at?</summary>
       <div class="explain-body">
         <p>
-          The trading plan&rsquo;s rules, turned into a checklist of questions. For every
-          trade idea the AI scores each question from nought to a hundred and says
-          what decided it. The overall score is then worked out by the software,
-          not stated by the AI, so the AI cannot talk a trade up.
+          For every score the AI also says what decided it. Because the software
+          works out the total, the AI cannot talk a trade up.
         </p>
         <p>
           Some questions are marked must pass. If one of those scores too low, the
@@ -871,11 +819,8 @@
           counts how often that happened.
         </p>
         <p>
-          The pattern of scores matters most. A question that scores zero every
-          time suggests the software and the AI disagree about what it means. One
-          that often lands in the middle suggests the AI is unsure about something
-          that should be a clear yes or no. A simple count cannot tell those two
-          apart, and they need different fixes.
+          The pattern of scores matters most. A simple count of blocks cannot tell
+          the two problems above apart, and they need different fixes.
         </p>
         <p>
           This table is about the judge, not the strategy.
