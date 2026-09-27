@@ -208,6 +208,9 @@
     max-width: 90ch;
   }
   .notice strong { color: var(--i); font-weight: 600; }
+  /* The same notice, struck in the loss colour: shown only when the report
+     is more than a week old. */
+  .notice.stale { border-top: 2px solid var(--neg); margin: 1.25rem 0 0; max-width: none; }
 
   /* ---------- hero: two windows ---------- */
 
@@ -496,6 +499,7 @@
       <div class="stamp" id="stamp"></div>
     </div>
   </header>
+  <p class="notice stale" id="stale" role="status" hidden></p>
 
   <nav class="index" aria-label="Sections">
     <ol>
@@ -1054,6 +1058,19 @@
       "<b>Three years of " + esc(gran || "") + " prices, " + num(D.pairs) + " currency pairs</b>" +
       "<span>" + esc(day(w[0])) + " to " + esc(day(w[1])) + ", " + num(D.bars) + " price bars</span>";
     document.getElementById("docno").textContent = "Assay report, " + day(D.generated_at);
+    // How old the report is. The backtests don't date, but the agent's
+    // figures do, and nothing else would show that the builds had stopped.
+    var built = Date.parse(D.generated_at || ""), days = Math.floor((Date.now() - built) / 86400000);
+    if (!isNaN(days) && days >= 0) {
+      document.getElementById("docno").textContent += " · " +
+        (days === 0 ? "less than a day old" : days === 1 ? "1 day old" : days + " days old");
+      if (days > 7) {
+        var stale = document.getElementById("stale");
+        stale.innerHTML = "<strong>This report is " + days + " days old.</strong> The backtests " +
+          "don&rsquo;t change, but the agent&rsquo;s figures further down may be out of date.";
+        stale.hidden = false;
+      }
+    }
     // The build time, in the masthead's style rather than raw ISO.
     var hm = /T(\d{2}):(\d{2})(?::[\d.]+)?(Z|[+-]\d{2}:\d{2})?$/.exec(D.generated_at || "");
     document.getElementById("footStamp").textContent = "Generated " + (hm
