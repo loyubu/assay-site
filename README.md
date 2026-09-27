@@ -7,7 +7,10 @@ contain, rather than what they claim.
 
 ## What this repository is
 
-Two files: a self-contained page and the data it renders. Nothing else.
+A self-contained page and the data it renders, plus the fonts the page
+uses in `fonts/`, with their licences. The fonts are served from here rather
+than from Google, so opening the page sends a visitor's browser to no one
+else.
 
 The agent itself lives in a separate, private repository. That separation is
 deliberate and structural rather than a matter of care: the trading journal,
