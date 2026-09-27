@@ -418,7 +418,7 @@
   .tip {
     position: absolute; pointer-events: none; opacity: 0; transition: opacity 120ms ease;
     background: var(--s); border: 1px solid var(--i); padding: 0.3rem 0.5rem;
-    font-size: 0.74rem; white-space: nowrap; z-index: 4;
+    font-size: 0.74rem; z-index: 4; max-width: 100%;   /* wraps on a phone rather than overflowing */
   }
   .chart-hint { color: var(--f); font-size: 0.8rem; margin: 0.5rem 0 0; }
 
@@ -665,7 +665,7 @@
             <th><button type="button" class="def" data-term="Average per trade">Average per trade</button></th>
             <th><button type="button" class="def" data-term="Total">Total</button></th>
             <th><button type="button" class="def" data-term="Chance test">Chance test</button></th>
-            <th></th>
+            <th>Average, to scale</th>
           </tr>
         </thead>
         <tbody id="pyrBody"></tbody>
@@ -949,11 +949,20 @@
 (function () {
   "use strict";
   var D = JSON.parse(document.getElementById("data").textContent);
-  var SPREADS = [0.0, 0.3, 0.5, 0.8, 1.0, 1.5, 2.0];
   // The cost the headline figures are measured at. Winners, profit factor,
   // enough-data and verdict exist only here; the build does not publish
   // them per cost.
   var HEADLINE = 0.8;
+  // The cost levels the build measured, read from the data rather than
+  // written out here, so a level the build adds reaches the slider by itself.
+  var SPREADS = (function () {
+    var seen = {};
+    (D.systems || []).forEach(function (s) {
+      (s.by_spread || []).forEach(function (b) { if (b.spread_pips != null) seen[b.spread_pips] = true; });
+    });
+    var list = Object.keys(seen).map(Number).sort(function (a, b) { return a - b; });
+    return list.length ? list : [HEADLINE];
+  })();
   var VERDICT = {
     loses: "Loses", fee: "Fee eats it", none: "No evidence", clears: "Clears the bar"
   };
@@ -978,14 +987,21 @@
   var fmt = function (v, n) {
     return (v === null || v === undefined) ? "--" : grouped(Number(v), n === undefined ? 3 : n);
   };
+  // A figure that rounds to zero is neither a gain nor a loss: no sign and
+  // no colour. Before, -0.0004 printed as "−0.000" and a zero as a gain.
   var signed = function (v, n) {
     if (v === null || v === undefined) return "--";
-    var s = grouped(Math.abs(Number(v)), n === undefined ? 3 : n);
-    return Number(v) > 0 ? "+" + s : (Number(v) < 0 ? "−" + s : s);
+    var d = n === undefined ? 3 : n, s = grouped(Math.abs(Number(v)), d);
+    if (Number(Math.abs(Number(v)).toFixed(d)) === 0) return s;
+    return Number(v) > 0 ? "+" + s : "−" + s;
   };
   // A count the build did not publish is unknown, not zero.
   var count = function (v) { return v === null || v === undefined ? "--" : num(v); };
-  var cls = function (v) { return v === null || v === undefined ? "" : (v >= 0 ? "pos" : "neg"); };
+  var cls = function (v, n) {
+    if (v === null || v === undefined) return "";
+    var r = Number(Number(v).toFixed(n === undefined ? 3 : n));
+    return r > 0 ? "pos" : (r < 0 ? "neg" : "");
+  };
   // The human name, falling back to the id. Rows stay keyed on the id
   // everywhere it is used as a key; only text the reader sees gets the name.
   var disp = function (s) { return s.display || s.name; };
@@ -1159,7 +1175,7 @@
       // phone width "-0.216R" used to be clipped at the left edge.
       var inside = half > 30;
       val.textContent = signed(v) + "R";
-      val.className = "val num " + (v >= 0 ? "pos" : "neg") + (inside ? " inside" : "");
+      val.className = "val num " + cls(v) + (inside ? " inside" : "");
       if (v >= 0) {
         val.style.left = (inside ? 50 + half - 1.2 : 50 + half + 1.2) + "%";
         val.style.transform = inside ? "translate(-100%, -50%)" : "translateY(-50%)";
@@ -1232,8 +1248,11 @@
       if (!sortKey) return rows;   // alphabetical, as the build already sorted them
       return rows.sort(function (a, b) {
         var x = value(a, sortKey), y = value(b, sortKey);
+        // Missing values sort last in both directions. Comparing rather than
+        // subtracting keeps two "above 2.0" break-evens (Infinity) from NaN.
+        if (x == null || y == null) return x == null ? (y == null ? 0 : 1) : -1;
         if (typeof x === "string") return x.localeCompare(y) * dir;
-        return ((x == null ? -Infinity : x) - (y == null ? -Infinity : y)) * dir;
+        return (x < y ? -1 : x > y ? 1 : 0) * dir;
       });
     }
     function draw() {
@@ -1272,7 +1291,7 @@
           '<td><span class="ecell"><span class="num ' + cls(e) + '">' + signed(e) + '</span>' +
             '<span class="dbar" aria-hidden="true"><span class="t0"></span><span class="f ' + (e >= 0 ? "p" : "n") +
             '" style="left:' + (e >= 0 ? 50 : 50 - half) + '%;width:' + half + '%"></span></span></span></td>' +
-          '<td class="num ' + cls(b.total_r) + '">' + signed(b.total_r, 1) + '</td>' +
+          '<td class="num ' + cls(b.total_r, 1) + '">' + signed(b.total_r, 1) + '</td>' +
           heldCell("num", fmt(s.profit_factor, 2)) +
           '<td class="num">' + signed(b.t_stat, 2) + '</td>' +
           '<td class="num">' + beTxt + '</td>' +
@@ -1393,11 +1412,16 @@
       var vx = x(fx), vy = y(mine.pts[i]);
       cx.setAttribute("x1", vx); cx.setAttribute("x2", vx); cx.setAttribute("opacity", "0.35");
       cd.setAttribute("cx", vx); cd.setAttribute("cy", vy); cd.setAttribute("opacity", "1");
-      tip.textContent = disp(sel) + ", " + Math.round(fx * 100) + "% of the way through: " +
-        signed(sel.equity_curve[i], 0) + "R in total so far";
+      tip.textContent = disp(sel) + ", " + Math.round(fx * 100) + "% through: " +
+        signed(sel.equity_curve[i], 0) + "R so far";
       tip.style.opacity = "1";
       var left = vx / W * box.width;
-      tip.style.left = Math.min(Math.max(left - 70, 0), Math.max(box.width - 230, 0)) + "px";
+      // Measured at the left edge, where it has the most room, then held at
+      // that width so moving it right can't squeeze it onto a second line.
+      tip.style.left = "0px"; tip.style.width = "";
+      var tw = Math.ceil(tip.getBoundingClientRect().width);
+      tip.style.width = tw + "px";
+      tip.style.left = Math.min(Math.max(left - tw / 2, 0), Math.max(box.width - tw, 0)) + "px";
       tip.style.top = Math.max(vy / H * box.height - 38, 0) + "px";
     }
     function leave() { cx.setAttribute("opacity", "0"); cd.setAttribute("opacity", "0"); tip.style.opacity = "0"; }
@@ -1414,7 +1438,7 @@
   // ---------- like for like (M15) ----------
   var systems = D.systems || [];
   var bars = D.verdict_bars || {};
-  var spreadIdx = 3;
+  var spreadIdx = Math.max(SPREADS.indexOf(HEADLINE), 0);
   var selected = (function () {
     var want = D.default_system;
     return want && systems.some(function (s) { return s.name === want; })
@@ -1445,6 +1469,14 @@
       "it moves. Verdicts need a chance test beyond " +
       (bars.systems != null ? bars.systems.toFixed(2) : "--") + " either way: stricter than usual, " +
       "because " + systems.length + " rule sets are being compared at once.";
+    (function () {
+      var el = document.getElementById("spread"), label = SPREADS[spreadIdx].toFixed(1) + " pips";
+      el.max = SPREADS.length - 1; el.value = spreadIdx; el.setAttribute("aria-valuetext", label);
+      document.getElementById("spreadVal").textContent = label;
+      document.querySelector(".controls .ticks").innerHTML = SPREADS.map(function (s) {
+        return "<span>" + (s === 0 ? "0" : s.toFixed(1)) + "</span>";
+      }).join("");
+    })();
     document.getElementById("spread").addEventListener("input", function () {
       spreadIdx = Number(this.value);
       var label = SPREADS[spreadIdx].toFixed(1) + " pips";
@@ -1478,8 +1510,12 @@
   }
 
   // Redraw the charts at their new width when the window changes size.
-  var rz;
+  // Only a change of width redraws: on a phone, the address bar showing or
+  // hiding fires resize with a new height, and rebuilt the chart mid-scroll.
+  var rz, lastWidth = window.innerWidth;
   window.addEventListener("resize", function () {
+    if (window.innerWidth === lastWidth) return;
+    lastWidth = window.innerWidth;
     clearTimeout(rz);
     rz = setTimeout(function () { if (systems.length) drawEquity(); }, 150);
   });
@@ -1487,9 +1523,9 @@
   // ---------- pyramiding ----------
   var pyr = D.pyramid || [];
   if (pyr.length) {
-    var worst = Math.max.apply(null, pyr.map(function (r) { return Math.abs(r.expectancy_r || 0); }));
+    var widest = Math.max.apply(null, pyr.map(function (r) { return Math.abs(r.expectancy_r || 0); }));
     document.getElementById("pyrBody").innerHTML = pyr.map(function (r) {
-      var w = worst ? Math.abs(r.expectancy_r || 0) / worst * 100 : 0;
+      var w = widest ? Math.abs(r.expectancy_r || 0) / widest * 100 : 0;
       var label = r.unit_count === 1 ? "1 <span class='badge conf'>no adding</span>"
                 : r.unit_count === 4 ? "4 <span class='badge req'>as written</span>"
                 : String(r.unit_count);
@@ -1497,10 +1533,10 @@
         '<td class="num">' + num(r.trades) + '</td>' +
         '<td class="num">' + (r.win_rate == null ? "--" : (r.win_rate * 100).toFixed(1) + "%") + '</td>' +
         '<td class="num ' + cls(r.expectancy_r) + '">' + signed(r.expectancy_r) + '</td>' +
-        '<td class="num ' + cls(r.total_r) + '">' + signed(r.total_r, 1) + '</td>' +
+        '<td class="num ' + cls(r.total_r, 1) + '">' + signed(r.total_r, 1) + '</td>' +
         '<td class="num">' + signed(r.t_stat, 2) + '</td>' +
-        '<td><div class="bar-track" style="width:120px;margin-left:auto">' +
-        '<div class="bar-fill" style="width:' + w + '%;background:var(--neg)"></div></div></td></tr>';
+        '<td><div class="bar-track" style="width:120px;margin-left:auto" aria-hidden="true">' +
+        '<div class="bar-fill" style="width:' + w + '%;background:var(' + ((r.expectancy_r || 0) < 0 ? "--neg" : "--pos") + ')"></div></div></td></tr>';
     }).join("");
   } else {
     document.getElementById("pyramid").hidden = true;
