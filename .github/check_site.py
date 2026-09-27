@@ -115,18 +115,23 @@ for label, doc in (("the page's inline data", data), ("stats.json", stats)):
 
 
 # ---------- nicknames only ----------
-# The data still carries the build's internal ids beside the nicknames;
-# everywhere else, on the page and in the README, rule sets go by nickname.
+# The build now keys the public data by nickname: a rule set's "name" is its
+# lowercase nickname, so there is nothing left to leak. Any name that is not
+# simply the nickname is treated as an internal id and must not appear
+# outside the data, on the page or in the README.
 
 outside_data = DATA_BLOCK.sub("", page)
-ids = sorted({s["name"] for t in ("systems", "systems_daily") for s in data.get(t) or [] if s.get("name")})
+ids = sorted({s["name"] for t in ("systems", "systems_daily") for s in data.get(t) or []
+              if s.get("name") and s["name"] != str(s.get("display") or "").lower()})
 leaks = [i for i in ids
          for where, text in (("index.html", outside_data), ("README.md", readme))
          if re.search(r"(?<![\w-])" + re.escape(i) + r"(?![\w-])", text, re.I)]
 if leaks:
     fail("an internal id appears outside the data: " + ", ".join(sorted(set(leaks))))
-else:
+elif ids:
     ok(f"none of the {len(ids)} internal ids appears outside the data")
+else:
+    ok("the data is keyed by nickname, so no internal id is published")
 
 
 # ---------- every column definition exists ----------
